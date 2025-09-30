@@ -52,17 +52,11 @@ public class ProductController {
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest requestDTO) {
         Product productDetails = productMapper.toEntity(requestDTO);
         Product updatedProduct = productService.updateProduct(id, productDetails);
-        if (updatedProduct == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(productMapper.toDto(updatedProduct));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        if (productService.getProductById(id).isEmpty()) {
-             return ResponseEntity.notFound().build();
-        }
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
