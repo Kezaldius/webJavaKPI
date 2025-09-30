@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class IntergalacticMarketApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(IntergalacticMarketApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(IntergalacticMarketApplication.class, args);
+    }
 }
