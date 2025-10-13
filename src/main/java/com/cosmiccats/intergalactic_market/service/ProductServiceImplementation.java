@@ -3,6 +3,7 @@ package com.cosmiccats.intergalactic_market.service;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import org.springframework.stereotype.Service;
 import com.cosmiccats.intergalactic_market.exceptions.ResourceMissing;
+import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ProductServiceImplementation implements ProductService{
     @Override
     public Product updateProduct(Long id, Product productDetails) {
         if (!products.containsKey(id)) {
-            throw new ResourceMissing("Product not found with id: " + id);
+            throw new ProductNotFoundException(id);
         }
         productDetails.setId(id); 
         products.put(id, productDetails);
