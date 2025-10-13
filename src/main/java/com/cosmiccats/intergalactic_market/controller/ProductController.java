@@ -42,6 +42,7 @@ public class ProductController {
 
 
     @PostMapping
+    @ApiResponse(responseCode = "201", description = "Product created successfully")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest requestDTO) {
         Product productToCreate = productMapper.toEntity(requestDTO);
         Product createdProduct = productService.createProduct(productToCreate);

@@ -1,12 +1,13 @@
 openapi: 3.1.0
 info:
-  title: OpenAPI definition
-  version: v0
+  title: Intergalactic Market API
+  description: API for managing intergalactic products.
+  version: 0.1.0-SNAPSHOT
 servers:
 - url: http://localhost:8080
   description: Generated server url
 paths:
-  /api/products/{id}:
+  /api/v1/products/{id}:
     get:
       tags:
       - product-controller
@@ -61,9 +62,9 @@ paths:
           type: integer
           format: int64
       responses:
-        "200":
-          description: OK
-  /api/products:
+        "204":
+          description: Product successfully deleted
+  /api/v1/products:
     get:
       tags:
       - product-controller
@@ -88,8 +89,8 @@ paths:
               $ref: "#/components/schemas/ProductRequest"
         required: true
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Product created successfully
           content:
             '*/*':
               schema:
@@ -98,25 +99,25 @@ components:
   schemas:
     ProductRequest:
       type: object
-      description: Дані для створення або оновлення товару
+      description: Data for creating or updating a product
       properties:
         name:
           type: string
-          description: "Назва товару. Повинна містити космічні терміни (star, galaxy,\
+          description: "Name of the product. Must contain cosmic terms (star, galaxy,\
             \ comet)"
-          example: Зоряний пил 'Galaxy Dust'
+          example: Galaxy Dust stardust
           maxLength: 100
           minLength: 3
         price:
           type: number
           format: double
-          description: Ціна товару. Повинна бути строго більше 0
+          description: Price of the product. Must be strictly greater than 0
           example: 99.99
           minimum: 0.0
         description:
           type: string
-          description: Детальний опис космічного товару
-          example: Найкращий пил з туманності Андромеди
+          description: Detailed description of the cosmic product
+          example: The finest dust from the Andromeda nebula
       required:
       - name
     ProductDTO:
