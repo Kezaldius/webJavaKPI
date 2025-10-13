@@ -9,7 +9,7 @@ public class CosmicWordValidator implements ConstraintValidator<CosmicWordChecke
     @Override
         public boolean isValid(String value, ConstraintValidatorContext context) {
             if (value == null || value.trim().isEmpty()) {
-                return true; // Вже є @notempty
+                return true; 
             }
             return COSMIC_WORDS.stream().anyMatch(word -> value.toLowerCase().contains(word));
         }

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.cosmiccats</groupId>
 	<artifactId>intergalactic-market</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>intergalactic-market</name>
 	<description>Cosmo Cats Intergalactic Marketplace</description>
 	<url/>

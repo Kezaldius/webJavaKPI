@@ -1,7 +1,8 @@
 package com.cosmiccats.intergalactic_market.controller;
 
-import com.cosmiccats.intergalactic_market.DTO.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.cosmiccats.intergalactic_market.domain.Product;
+import com.cosmiccats.intergalactic_market.dto.*;
 import com.cosmiccats.intergalactic_market.mapper.ProductMapper;
 import com.cosmiccats.intergalactic_market.service.ProductService;
 
@@ -55,6 +56,8 @@ public class ProductController {
         return ResponseEntity.ok(productMapper.toDto(updatedProduct));
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiResponse(responseCode = "204", description = "Product successfully deleted")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);

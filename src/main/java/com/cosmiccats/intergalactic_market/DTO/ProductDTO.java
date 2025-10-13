@@ -1,4 +1,4 @@
-package com.cosmiccats.intergalactic_market.DTO;
+package com.cosmiccats.intergalactic_market.dto;
 
 import lombok.Data;
 
