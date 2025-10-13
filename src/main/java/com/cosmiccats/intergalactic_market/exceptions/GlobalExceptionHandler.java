@@ -20,9 +20,11 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex, HttpServletRequest request) {
 
         FieldError fieldError = ex.getBindingResult().getFieldError();
-        String errorMessage = "Field '" + fieldError.getField() + "': " + fieldError.getDefaultMessage();
-        
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
+        String errorMessage =
+                "Field '" + fieldError.getField() + "': " + fieldError.getDefaultMessage();
+
+        ProblemDetail problemDetail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
         problemDetail.setTitle("Validation Failed");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
 
@@ -31,10 +33,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<ProblemDetail> handleProductNotFoundException(
-            ProductNotFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleProductNotFoundException(ProductNotFoundException ex,
+            HttpServletRequest request) {
 
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        ProblemDetail problemDetail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problemDetail.setTitle("Resource Not Found");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
 

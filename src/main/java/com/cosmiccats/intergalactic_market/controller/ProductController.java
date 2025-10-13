@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController 
-@RequestMapping("/api/v1/products") 
+@RestController
+@RequestMapping("/api/v1/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -27,8 +27,7 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDTO> getAllProducts() {
-        return productService.getAllProducts().stream()
-                .map(productMapper::toDto)
+        return productService.getAllProducts().stream().map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -51,7 +50,8 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest requestDTO) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
+            @Valid @RequestBody ProductRequest requestDTO) {
         Product productDetails = productMapper.toEntity(requestDTO);
         Product updatedProduct = productService.updateProduct(id, productDetails);
         return ResponseEntity.ok(productMapper.toDto(updatedProduct));

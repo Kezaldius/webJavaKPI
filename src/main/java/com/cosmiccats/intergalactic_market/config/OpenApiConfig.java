@@ -16,10 +16,8 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Intergalactic Market API") 
-                        .description("API for managing intergalactic products.")
-                        .version(buildProperties.getVersion()));
+        return new OpenAPI().info(new Info().title("Intergalactic Market API")
+                .description("API for managing intergalactic products.")
+                .version(buildProperties.getVersion()));
     }
 }

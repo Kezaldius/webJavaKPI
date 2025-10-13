@@ -11,18 +11,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class ProductServiceImplementation implements ProductService{
+public class ProductServiceImplementation implements ProductService {
     private final ConcurrentHashMap<Long, Product> products = new ConcurrentHashMap<>();
     private final AtomicLong idCounter = new AtomicLong();
 
     public ProductServiceImplementation() {
-        createProduct(new Product(null, "Anti Gravity Yarn Balls", 150.50, "Yarn balls that never fall."));
+        createProduct(new Product(null, "Anti Gravity Yarn Balls", 150.50,
+                "Yarn balls that never fall."));
         createProduct(new Product(null, "Milky Way Cosmic Milk'", 99.99, "Milk from cosmic cows."));
     }
 
     @Override
     public Product createProduct(Product product) {
-        long newId = idCounter.incrementAndGet(); 
+        long newId = idCounter.incrementAndGet();
         product.setId(newId);
         products.put(newId, product);
         return product;
@@ -43,13 +44,13 @@ public class ProductServiceImplementation implements ProductService{
         if (!products.containsKey(id)) {
             throw new ProductNotFoundException(id);
         }
-        productDetails.setId(id); 
+        productDetails.setId(id);
         products.put(id, productDetails);
         return productDetails;
     }
 
     @Override
     public void deleteProduct(Long id) {
-        products.remove(id); 
+        products.remove(id);
     }
 }
