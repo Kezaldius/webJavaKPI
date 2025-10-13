@@ -2,7 +2,6 @@ package com.cosmiccats.intergalactic_market.service;
 
 import com.cosmiccats.intergalactic_market.domain.Product;
 import org.springframework.stereotype.Service;
-import com.cosmiccats.intergalactic_market.exceptions.ResourceMissing;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
 
 import java.util.ArrayList;
