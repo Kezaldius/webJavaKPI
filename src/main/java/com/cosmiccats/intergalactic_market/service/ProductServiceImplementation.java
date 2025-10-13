@@ -16,8 +16,8 @@ public class ProductServiceImplementation implements ProductService{
     private final AtomicLong idCounter = new AtomicLong();
 
     public ProductServiceImplementation() {
-        createProduct(new Product(null, "Антигравітаційні клубки ниток", 150.50, "Клубки, що ніколи не падають."));
-        createProduct(new Product(null, "Космічне молоко 'Мілківей'", 99.99, "Молоко від космічних корів."));
+        createProduct(new Product(null, "Anti Gravity Yarn Balls", 150.50, "Yarn balls that never fall."));
+        createProduct(new Product(null, "Milky Way Cosmic Milk'", 99.99, "Milk from cosmic cows."));
     }
 
     @Override
@@ -50,8 +50,6 @@ public class ProductServiceImplementation implements ProductService{
 
     @Override
     public void deleteProduct(Long id) {
-    if (products.remove(id) == null) { 
-        throw new ResourceMissing("Product not found with id: " + id);
-        }
+        products.remove(id); 
     }
 }
