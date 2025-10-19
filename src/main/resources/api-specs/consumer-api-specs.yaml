@@ -1,0 +1,135 @@
+openapi: 3.1.0
+info:
+  title: Intergalactic Market API
+  description: API for managing intergalactic products.
+  version: 0.1.0-SNAPSHOT
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/v1/products/{id}:
+    get:
+      tags:
+      - product-controller
+      operationId: getProductById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductDTO"
+    put:
+      tags:
+      - product-controller
+      operationId: updateProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductDTO"
+    delete:
+      tags:
+      - product-controller
+      operationId: deleteProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "204":
+          description: Product successfully deleted
+  /api/v1/products:
+    get:
+      tags:
+      - product-controller
+      operationId: getAllProducts
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductDTO"
+    post:
+      tags:
+      - product-controller
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductRequest"
+        required: true
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductDTO"
+components:
+  schemas:
+    ProductRequest:
+      type: object
+      description: Data for creating or updating a product
+      properties:
+        name:
+          type: string
+          description: "Name of the product. Must contain cosmic terms (star, galaxy,\
+            \ comet)"
+          example: Galaxy Dust stardust
+          maxLength: 100
+          minLength: 3
+        price:
+          type: number
+          format: double
+          description: Price of the product. Must be strictly greater than 0
+          example: 99.99
+          minimum: 0.0
+        description:
+          type: string
+          description: Detailed description of the cosmic product
+          example: The finest dust from the Andromeda nebula
+      required:
+      - name
+    ProductDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        price:
+          type: number
+          format: double
+        description:
+          type: string
