@@ -2,7 +2,6 @@ package com.cosmiccats.intergalactic_market.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +10,11 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
 
-    @Autowired
-    private BuildProperties buildProperties;
+    private final BuildProperties buildProperties;
+
+    public OpenApiConfig(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
 
     @Bean
     public OpenAPI customOpenAPI() {
