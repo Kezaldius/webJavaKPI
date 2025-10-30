@@ -23,26 +23,21 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Cache Gradle dependencies
-      - name: Cache Gradle dependencies
+      # Cache Mavem dependencies
+      - name: Cache Maven packages
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/gradle-wrapper.properties') }}
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            gradle-
+            ${{ runner.os }}-maven-
 
-      - name: Grant execute permission for Gradlew
-        run: chmod +x ./gradlew
+      - name: Grant execute permission for Maven Wrapper
+        run: chmod +x ./mvnw
 
-      # Run Gradle build and tests with coverage
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          generate-job-summary: false
+      # Run maven build and tests with coverage
+      - name: Build with Maven
+        run: ./mvnw -B verify 
 
       # Upload the JaCoCo test coverage report
       - name: Upload coverage report
