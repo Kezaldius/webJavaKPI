@@ -4,16 +4,13 @@ import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.dto.ProductDTO;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-
-@SpringBootTest
 class ProductMapperTest {
 
-    @Autowired
-    private ProductMapper productMapper;
+    private final ProductMapper productMapper = Mappers.getMapper(ProductMapper.class);
 
     @Test
     void shouldMapProductRequestToProductEntity() {
