@@ -7,17 +7,16 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+
 
 @Slf4j
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class FeatureToggleAspect {
 
     private final FeatureToggleService featureToggleService;
-
-    public FeatureToggleAspect(FeatureToggleService featureToggleService) {
-        this.featureToggleService = featureToggleService;
-    }
 
     @Around("@annotation(requiresFeatureToggle)")
     public Object checkFeatureToggle(ProceedingJoinPoint joinPoint, RequiresFeatureToggle requiresFeatureToggle) throws Throwable {
