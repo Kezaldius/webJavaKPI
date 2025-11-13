@@ -11,7 +11,7 @@ public interface ProductService {
 
     Optional<Product> getProductById(Long id);
 
-    Optional<Product> updateProduct(Long id, Product productDetails);
+    Product updateProduct(Long id, Product productDetails);
 
     void deleteProduct(Long id);
 }
