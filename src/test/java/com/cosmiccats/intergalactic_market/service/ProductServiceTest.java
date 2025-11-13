@@ -16,9 +16,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ProductServiceImplementation.class)
-@DisplayName("Product Service Implementation Test")
+@DisplayName("Product Service Tests")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class ProductServiceImplementationTest {
+class ProductServiceTest {
 
     @Autowired
     private ProductServiceImplementation productService;
