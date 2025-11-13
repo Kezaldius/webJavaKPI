@@ -1,17 +1,22 @@
 package com.cosmiccats.intergalactic_market.controller;
 
+import com.cosmiccats.intergalactic_market.config.MappersTestConfiguration;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
+import com.cosmiccats.intergalactic_market.exceptions.GlobalExceptionHandler;
+import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
+import com.cosmiccats.intergalactic_market.mapper.ProductMapper;
 import com.cosmiccats.intergalactic_market.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -28,34 +33,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ProductControllerIT {
 
+    private static final Long PRODUCT_ID = 1L;
+    private static final Long NON_EXISTENT_ID = 99L;
+    private static final String PRODUCT_NAME = "Galaxy Yarn";
+    private static final double PRODUCT_PRICE = 199.99;
+    private static final String PRODUCT_DESCRIPTION = "Improved cosmic yarn";
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private ProductMapper productMapper;
+
     @MockitoBean
     private ProductService productService;
-
-    private Product product;
-    private ProductRequest productRequest;
-
-    @BeforeEach
-    void setUp() {
-        product = new Product(1L, "Galaxy Yarn", 199.99, "Improved cosmic yarn");
-        productRequest = new ProductRequest("Galaxy Yarn", 199.99, "Improved cosmic yarn");
-        reset(productService);
-    }
 
     @Test
     @DisplayName("GET /products - Should return list of products")
     void getAllProducts_ShouldReturnProducts() throws Exception {
+        Product product = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
         when(productService.getAllProducts()).thenReturn(Collections.singletonList(product));
 
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name", is("Galaxy Yarn")));
+                .andExpect(jsonPath("$[0].name", is(PRODUCT_NAME)));
 
         verify(productService, times(1)).getAllProducts();
     }
@@ -63,14 +68,17 @@ class ProductControllerIT {
     @Test
     @DisplayName("POST /products - Should create a new product")
     void createProduct_ShouldAddNewProduct() throws Exception {
-        when(productService.createProduct(any(Product.class))).thenReturn(product);
+        ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product createdProduct = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+
+        when(productService.createProduct(any(Product.class))).thenReturn(createdProduct);
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.name", is("Galaxy Yarn")));
+                .andExpect(jsonPath("$.id", is(PRODUCT_ID.intValue())))
+                .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
 
         verify(productService, times(1)).createProduct(any(Product.class));
     }
@@ -78,52 +86,59 @@ class ProductControllerIT {
     @Test
     @DisplayName("GET /products/{id} - Should return existing product")
     void getProductById_ShouldReturnExistingProduct() throws Exception {
-        when(productService.getProductById(1L)).thenReturn(Optional.of(product));
+        Product product = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        when(productService.getProductById(PRODUCT_ID)).thenReturn(Optional.of(product));
 
-        mockMvc.perform(get("/api/v1/products/1"))
+        mockMvc.perform(get("/api/v1/products/" + PRODUCT_ID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.name", is("Galaxy Yarn")));
+                .andExpect(jsonPath("$.id", is(PRODUCT_ID.intValue())))
+                .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
 
-        verify(productService, times(1)).getProductById(1L);
+        verify(productService, times(1)).getProductById(PRODUCT_ID);
     }
 
     @Test
     @DisplayName("GET /products/{id} - Should return 404 Not Found")
     void getProductById_WhenNotFound_ShouldReturn404() throws Exception {
-        when(productService.getProductById(99L)).thenReturn(Optional.empty());
+        when(productService.getProductById(NON_EXISTENT_ID)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/v1/products/99"))
+        mockMvc.perform(get("/api/v1/products/" + NON_EXISTENT_ID))
                 .andExpect(status().isNotFound());
 
-        verify(productService, times(1)).getProductById(99L);
+        verify(productService, times(1)).getProductById(NON_EXISTENT_ID);
     }
 
     @Test
     @DisplayName("PUT /products/{id} - Should modify existing product")
     void updateProduct_ShouldModifyExistingProduct() throws Exception {
-        when(productService.updateProduct(eq(1L), any(Product.class))).thenReturn(product);
+        ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product updatedProduct = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
 
-        mockMvc.perform(put("/api/v1/products/1")
+        when(productService.updateProduct(eq(PRODUCT_ID), any(Product.class))).thenReturn(updatedProduct);
+
+        mockMvc.perform(put("/api/v1/products/" + PRODUCT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is("Galaxy Yarn")));
+                .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
 
-        verify(productService, times(1)).updateProduct(eq(1L), any(Product.class));
+        verify(productService, times(1)).updateProduct(eq(PRODUCT_ID), any(Product.class));
     }
 
     @Test
     @DisplayName("PUT /products/{id} - Should return 404 Not Found")
     void updateProduct_WhenNotFound_ShouldReturn404() throws Exception {
-        when(productService.updateProduct(eq(99L), any(Product.class))).thenReturn(null);
+        ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
 
-        mockMvc.perform(put("/api/v1/products/99")
+        when(productService.updateProduct(eq(NON_EXISTENT_ID), any(Product.class)))
+                .thenThrow(new ProductNotFoundException(NON_EXISTENT_ID));
+
+        mockMvc.perform(put("/api/v1/products/" + NON_EXISTENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productRequest)))
                 .andExpect(status().isNotFound());
 
-        verify(productService, times(1)).updateProduct(eq(99L), any(Product.class));
+        verify(productService, times(1)).updateProduct(eq(NON_EXISTENT_ID), any(Product.class));
     }
 
     @Test
@@ -140,7 +155,7 @@ class ProductControllerIT {
     @Test
     @DisplayName("POST /products - With invalid data should return Bad Request")
     void createProduct_WithInvalidData_ShouldReturnBadRequest() throws Exception {
-        ProductRequest invalidRequest = new ProductRequest("Item", 100.0, "No cosmic word");
+        ProductRequest invalidRequest = new ProductRequest("", -10.0, "Invalid");
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
