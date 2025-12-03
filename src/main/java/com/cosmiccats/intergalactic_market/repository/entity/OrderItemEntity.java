@@ -12,7 +12,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OrderItemEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_item_generator")
+    @SequenceGenerator(
+            name = "order_item_generator",
+            sequenceName = "order_item_seq",
+            allocationSize = 50
+    )
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

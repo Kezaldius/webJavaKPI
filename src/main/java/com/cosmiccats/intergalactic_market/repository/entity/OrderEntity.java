@@ -16,7 +16,12 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_seq")
+    @SequenceGenerator(
+            name = "order_generator",
+            sequenceName = "order_seq",
+            allocationSize = 50
+    )
     private Long id;
 
     private LocalDateTime createdAt;
