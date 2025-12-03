@@ -1,5 +1,6 @@
 package com.cosmiccats.intergalactic_market.aop;
 
+import com.cosmiccats.intergalactic_market.AbstractIT;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
 import com.cosmiccats.intergalactic_market.dto.ProductDTO;
 import com.cosmiccats.intergalactic_market.domain.Product;
@@ -27,10 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 // Сподіваюсь правильно зрозумів що потрібен саме інтеграційний тест для рівня контролеру, а не сервісу
-@SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Feature Toggle Aspect Integration Tests")
-public class FeatureToggleAspectIT {
+public class FeatureToggleAspectIT extends AbstractIT {
 
     @Autowired
     private MockMvc mockMvc;

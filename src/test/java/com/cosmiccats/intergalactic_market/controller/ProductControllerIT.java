@@ -1,5 +1,6 @@
 package com.cosmiccats.intergalactic_market.controller;
 
+import com.cosmiccats.intergalactic_market.AbstractIT;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
@@ -27,9 +28,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+
 @AutoConfigureMockMvc
-class ProductControllerIT {
+class ProductControllerIT extends AbstractIT {
 
     private static final Long PRODUCT_ID = 1L;
     private static final Long NON_EXISTENT_ID = 99L;
