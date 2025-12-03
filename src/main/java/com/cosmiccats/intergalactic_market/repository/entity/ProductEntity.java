@@ -11,17 +11,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class ProductEntity {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq_gen")
-    @SequenceGenerator(name = "product_seq_gen", sequenceName = "product_seq", allocationSize = 50)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
-    private double price;
+    private Double price;
 
     private String description;
 

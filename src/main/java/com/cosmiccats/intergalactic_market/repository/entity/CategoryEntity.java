@@ -14,10 +14,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class CategoryEntity {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq_gen")
-    @SequenceGenerator(name = "category_seq_gen", sequenceName = "category_seq", allocationSize = 50)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(nullable = false)
