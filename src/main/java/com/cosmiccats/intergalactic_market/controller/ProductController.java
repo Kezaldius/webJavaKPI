@@ -45,7 +45,7 @@ public class ProductController {
     @ApiResponse(responseCode = "201", description = "Product created successfully")
     @RequiresFeatureToggle("cosmoCats")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest requestDTO) {
-        Product productToCreate = productMapper.toEntity(requestDTO);
+        Product productToCreate = productMapper.toDomain(requestDTO);
         Product createdProduct = productService.createProduct(productToCreate);
         ProductDTO responseDto = productMapper.toDto(createdProduct);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -55,7 +55,7 @@ public class ProductController {
     @RequiresFeatureToggle("cosmoCats")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
             @Valid @RequestBody ProductRequest requestDTO) {
-        Product productDetails = productMapper.toEntity(requestDTO);
+        Product productDetails = productMapper.toDomain(requestDTO);
         Product updatedProduct = productService.updateProduct(id, productDetails);
         return ResponseEntity.ok(productMapper.toDto(updatedProduct));
     }

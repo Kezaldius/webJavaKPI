@@ -5,6 +5,8 @@ import com.cosmiccats.intergalactic_market.domain.Category;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.repository.CategoryRepository;
 import com.cosmiccats.intergalactic_market.repository.ProductRepository;
+import com.cosmiccats.intergalactic_market.repository.entity.CategoryEntity;
+import com.cosmiccats.intergalactic_market.repository.entity.ProductEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,62 +32,77 @@ class ProductServiceIT extends AbstractIT {
 
     @Test
     void shouldCreateAndRetrieveProduct() {
-        Category category = categoryRepository.save(new Category(CATEGORY_NAME));
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setName(CATEGORY_NAME);
+        categoryEntity = categoryRepository.save(categoryEntity);
 
-        Product newProduct = new Product(null, "Galaxy Chocolate Bar", 5.50, "Delicious dark matter chocolate");
-        newProduct.setCategory(category);
+        Category domainCategory = new Category(categoryEntity.getId(), CATEGORY_NAME, null);
+        Product newProduct = new Product(null, "Galaxy Chocolate Bar", 5.50, "Delicious", domainCategory);
 
         Product savedProduct = productService.createProduct(newProduct);
 
         assertThat(savedProduct.getId()).isNotNull();
 
-        Optional<Product> retrieved = productRepository.findById(savedProduct.getId());
+        Optional<ProductEntity> retrieved = productRepository.findById(savedProduct.getId());
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get().getName()).isEqualTo("Galaxy Chocolate Bar");
-        assertThat(retrieved.get().getCategory().getName()).isEqualTo(CATEGORY_NAME);
     }
 
     @Test
     void shouldUpdateProduct() {
-        Category category = categoryRepository.save(new Category(CATEGORY_NAME));
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setName(CATEGORY_NAME);
+        categoryEntity = categoryRepository.save(categoryEntity);
 
-        Product product = new Product(null, "Stale Star Bread", 1.0, "Very hard bread");
-        product.setCategory(category);
-        productService.createProduct(product);
+        ProductEntity productEntity = new ProductEntity();
+        productEntity.setName("Stale Star Bread");
+        productEntity.setPrice(1.0);
+        productEntity.setCategory(categoryEntity);
+        productEntity = productRepository.save(productEntity);
 
-        Product updateDetails = new Product(null, "Fresh Comet Bread", 12.0, "Baked on a passing comet");
+        Product updateDetails = new Product(null, "Fresh Comet Bread", 12.0, "Baked fresh", null);
 
-        productService.updateProduct(product.getId(), updateDetails);
+        productService.updateProduct(productEntity.getId(), updateDetails);
 
-        Product updated = productRepository.findById(product.getId()).orElseThrow();
+        ProductEntity updated = productRepository.findById(productEntity.getId()).orElseThrow();
         assertThat(updated.getPrice()).isEqualTo(12.0);
         assertThat(updated.getName()).isEqualTo("Fresh Comet Bread");
     }
 
     @Test
     void shouldDeleteProduct() {
-        Category category = categoryRepository.save(new Category(CATEGORY_NAME));
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setName(CATEGORY_NAME);
+        categoryRepository.save(categoryEntity);
 
-        Product product = new Product(null, "Radioactive Star Soup", 2.0, "Glowing green soup");
-        product.setCategory(category);
-        productService.createProduct(product);
+        ProductEntity productEntity = new ProductEntity();
+        productEntity.setName("Radioactive Star Soup");
+        productEntity.setPrice(2.0);
+        productEntity.setCategory(categoryEntity);
+        productEntity = productRepository.save(productEntity);
 
-        productService.deleteProduct(product.getId());
+        productService.deleteProduct(productEntity.getId());
 
-        assertThat(productRepository.findById(product.getId())).isEmpty();
+        assertThat(productRepository.findById(productEntity.getId())).isEmpty();
     }
 
     @Test
     void shouldGetAllProducts() {
-        Category category = categoryRepository.save(new Category(CATEGORY_NAME));
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setName(CATEGORY_NAME);
+        categoryRepository.save(categoryEntity);
 
-        Product p1 = new Product(null, "Galaxy Cheese", 10.0, "Made from Milky Way milk");
-        p1.setCategory(category);
-        productService.createProduct(p1);
+        ProductEntity p1 = new ProductEntity();
+        p1.setName("Galaxy Cheese");
+        p1.setPrice(10.0);
+        p1.setCategory(categoryEntity);
+        productRepository.save(p1);
 
-        Product p2 = new Product(null, "Spicy Comet Chips", 5.0, "Hot as the sun");
-        p2.setCategory(category);
-        productService.createProduct(p2);
+        ProductEntity p2 = new ProductEntity();
+        p2.setName("Spicy Comet Chips");
+        p2.setPrice(5.0);
+        p2.setCategory(categoryEntity);
+        productRepository.save(p2);
 
         List<Product> products = productService.getAllProducts();
 
