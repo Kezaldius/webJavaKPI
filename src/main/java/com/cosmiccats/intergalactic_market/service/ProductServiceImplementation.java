@@ -10,26 +10,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductServiceImplementation implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductEntityMapper productMapper;
 
     @Override
-    @Transactional
-    public Product createProduct(Product product) {
-        ProductEntity entity = productMapper.toEntity(product);
-        ProductEntity savedEntity = productRepository.save(entity);
-        return productMapper.toDomain(savedEntity);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(productMapper::toDomain)
@@ -37,32 +28,33 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Product> getProductById(Long id) {
+    public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .map(productMapper::toDomain);
+                .map(productMapper::toDomain)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Override
-    @Transactional
+    public Product createProduct(Product product) {
+        ProductEntity entity = productMapper.toEntity(product);
+        entity = productRepository.save(entity);
+        return productMapper.toDomain(entity);
+    }
+
+    @Override
     public Product updateProduct(Long id, Product productDetails) {
-        ProductEntity existingEntity = productRepository.findById(id)
+        ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
-        existingEntity.setName(productDetails.getName());
-        existingEntity.setPrice(productDetails.getPrice());
-        existingEntity.setDescription(productDetails.getDescription());
+        entity.setName(productDetails.getName());
+        entity.setPrice(productDetails.getPrice());
+        entity.setDescription(productDetails.getDescription());
 
-        ProductEntity updatedEntity = productRepository.save(existingEntity);
-        return productMapper.toDomain(updatedEntity);
+        return productMapper.toDomain(productRepository.save(entity));
     }
 
     @Override
-    @Transactional
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
-        }
         productRepository.deleteById(id);
     }
 }
