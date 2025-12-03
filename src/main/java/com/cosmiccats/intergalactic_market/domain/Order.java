@@ -17,7 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_seq_gen")
+    @SequenceGenerator(name = "order_seq_gen", sequenceName = "order_seq", allocationSize = 50)
     private Long id;
 
     @CreationTimestamp
