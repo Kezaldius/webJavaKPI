@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ProductEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_generator")
     @SequenceGenerator(
             name = "product_generator",
             sequenceName = "product_seq",
