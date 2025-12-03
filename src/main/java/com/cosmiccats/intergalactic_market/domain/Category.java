@@ -1,31 +1,13 @@
 package com.cosmiccats.intergalactic_market.domain;
 
-import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Entity
-@Table(name = "categories")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Category {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq_gen")
-    @SequenceGenerator(name = "category_seq_gen", sequenceName = "category_seq", allocationSize = 50)
     private Long id;
-
-    @Column(nullable = false)
     private String name;
-
-    @OneToMany(mappedBy = "category")
-    private List<Product> products = new ArrayList<>();
-
-    public Category(String name) {
-        this.name = name;
-    }
 }
