@@ -1,24 +1,33 @@
 package com.cosmiccats.intergalactic_market.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
+@Builder(toBuilder = true)
 public class Order {
-    private Long id;
-    private LocalDateTime createdAt;
-    private String customerEmail;
+    Long id;
+    LocalDateTime createdAt;
+    String customerEmail;
 
-    private List<OrderItem> items = new ArrayList<>();
+    @Builder.Default
+    List<OrderItem> items = new ArrayList<>();
 
-    public void addItem(Product product, int quantity) {
-        this.items.add(new OrderItem(null, this, product, quantity));
+    public Order addItem(Product product, int quantity) {
+        OrderItem newItem = OrderItem.builder()
+                .product(product)
+                .quantity(quantity)
+                .build();
+
+        List<OrderItem> newItems = new ArrayList<>(this.items);
+        newItems.add(newItem);
+
+        return this.toBuilder()
+                .items(newItems)
+                .build();
     }
 }

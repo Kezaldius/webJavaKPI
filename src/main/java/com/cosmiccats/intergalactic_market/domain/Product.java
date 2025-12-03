@@ -1,23 +1,14 @@
 package com.cosmiccats.intergalactic_market.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Value;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
+@Builder(toBuilder = true)
 public class Product {
-    private Long id;
-    private String name;
-    private double price;
-    private String description;
-    private Category category;
-
-    @Override
-    public String toString() {
-        return "Product{id=" + id + ", name='" + name + "'}";
-    }
+    Long id;
+    String name;
+    Double price;
+    String description;
+    Category category;
 }

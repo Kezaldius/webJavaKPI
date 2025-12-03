@@ -1,19 +1,17 @@
 package com.cosmiccats.intergalactic_market.domain;
 
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
+@Value
+@Builder(toBuilder = true)
 public class Category {
-    private final Long id;
-    private final String name;
-    private final List<Product> products;
+    Long id;
+    String name;
 
-    public Category(Long id, String name, List<Product> products) {
-        this.id = id;
-        this.name = name;
-        this.products = products != null ? products : new ArrayList<>();
-    }
+    @Builder.Default
+    List<Product> products = new ArrayList<>();
 }

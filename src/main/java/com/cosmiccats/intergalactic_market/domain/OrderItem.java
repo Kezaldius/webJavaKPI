@@ -1,15 +1,12 @@
 package com.cosmiccats.intergalactic_market.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
+@Builder(toBuilder = true)
 public class OrderItem {
-    private Long id;
-    private Order order;
-    private Product product;
-    private int quantity;
+    Long id;
+    Product product;
+    int quantity;
 }
