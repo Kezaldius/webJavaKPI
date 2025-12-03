@@ -4,6 +4,7 @@ import com.cosmiccats.intergalactic_market.dto.ProductRequest;
 import com.cosmiccats.intergalactic_market.dto.ProductDTO;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.mapper.ProductMapper;
+import com.cosmiccats.intergalactic_market.service.FeatureToggleService;
 import com.cosmiccats.intergalactic_market.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -27,10 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // Сподіваюсь правильно зрозумів що потрібен саме інтеграційний тест для рівня контролеру, а не сервісу
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "feature.toggles.cosmoCats=true",
-        "feature.toggles.kittyProducts=false"
-})
 @DisplayName("Feature Toggle Aspect Integration Tests")
 public class FeatureToggleAspectIT {
 
@@ -46,9 +44,14 @@ public class FeatureToggleAspectIT {
     @MockitoBean
     private ProductMapper productMapper;
 
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
+
     @Test
     @DisplayName("When 'cosmoCats' feature is ENABLED, should allow POST and return 201 Created")
     void whenCosmoCatsFeatureIsEnabled_shouldAllowCreateProduct() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
         ProductRequest request = new ProductRequest("Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies");
 
         Product mockEntity = new Product();
@@ -76,6 +79,7 @@ public class FeatureToggleAspectIT {
     @Test
     @DisplayName("When 'cosmoCats' feature is ENABLED, should allow PUT and return 200 OK")
     void whenCosmoCatsFeatureIsEnabled_shouldAllowUpdateProduct() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
         ProductRequest request = new ProductRequest("Galaxy Explorer", 20.0, "Navigate through distant galaxies");
 
         Product mockEntity = new Product();
@@ -103,6 +107,8 @@ public class FeatureToggleAspectIT {
     @Test
     @DisplayName("When 'kittyProducts' feature is DISABLED, should block DELETE and return 403 Forbidden")
     void whenKittyProductsFeatureIsDisabled_shouldBlockDeleteProduct() throws Exception {
+        when(featureToggleService.isEnabled("kittyProducts")).thenReturn(false);
+
         mockMvc.perform(delete("/api/v1/products/1"))
                 .andExpect(status().isForbidden());
 

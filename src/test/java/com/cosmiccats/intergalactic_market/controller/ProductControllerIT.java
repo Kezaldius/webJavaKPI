@@ -1,23 +1,20 @@
 package com.cosmiccats.intergalactic_market.controller;
 
-import com.cosmiccats.intergalactic_market.config.MappersTestConfiguration;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
-import com.cosmiccats.intergalactic_market.exceptions.GlobalExceptionHandler;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
 import com.cosmiccats.intergalactic_market.mapper.ProductMapper;
+import com.cosmiccats.intergalactic_market.service.FeatureToggleService;
 import com.cosmiccats.intergalactic_market.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -31,10 +28,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@TestPropertySource(properties = {
-        "feature.toggles.cosmoCats=true",
-        "feature.toggles.kittyProducts=true"
-})
 @AutoConfigureMockMvc
 class ProductControllerIT {
 
@@ -56,6 +49,9 @@ class ProductControllerIT {
     @MockitoBean
     private ProductService productService;
 
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
+
     @Test
     @DisplayName("GET /products - Should return list of products")
     void getAllProducts_ShouldReturnProducts() throws Exception {
@@ -73,6 +69,8 @@ class ProductControllerIT {
     @Test
     @DisplayName("POST /products - Should create a new product")
     void createProduct_ShouldAddNewProduct() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
         ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
         Product createdProduct = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
 
@@ -116,6 +114,8 @@ class ProductControllerIT {
     @Test
     @DisplayName("PUT /products/{id} - Should modify existing product")
     void updateProduct_ShouldModifyExistingProduct() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
         ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
         Product updatedProduct = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
 
@@ -133,6 +133,8 @@ class ProductControllerIT {
     @Test
     @DisplayName("PUT /products/{id} - Should return 404 Not Found")
     void updateProduct_WhenNotFound_ShouldReturn404() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
         ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
 
         when(productService.updateProduct(eq(NON_EXISTENT_ID), any(Product.class)))
@@ -149,6 +151,8 @@ class ProductControllerIT {
     @Test
     @DisplayName("DELETE /products/{id} - Should return No Content")
     void deleteProduct_ShouldReturnNoContent() throws Exception {
+        when(featureToggleService.isEnabled("kittyProducts")).thenReturn(true);
+
         doNothing().when(productService).deleteProduct(2L);
 
         mockMvc.perform(delete("/api/v1/products/2"))
@@ -160,6 +164,8 @@ class ProductControllerIT {
     @Test
     @DisplayName("POST /products - With invalid data should return Bad Request")
     void createProduct_WithInvalidData_ShouldReturnBadRequest() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
         ProductRequest invalidRequest = new ProductRequest("", -10.0, "Invalid");
 
         mockMvc.perform(post("/api/v1/products")
