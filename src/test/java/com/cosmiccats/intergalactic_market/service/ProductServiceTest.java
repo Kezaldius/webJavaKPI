@@ -44,8 +44,8 @@ class ProductServiceTest {
         entity2.setId(2L);
         entityList.add(entity2);
 
-        Product domain1 = new Product(1L, "Anti Gravity Yarn Balls", 150.50, "Desc", null);
-        Product domain2 = new Product(2L, "Milky Way Cosmic Milk", 99.99, "Desc", null);
+        Product domain1 = Product.builder().id(1L).name("Anti Gravity Yarn Balls").price(150.50).description("Desc").build();
+        Product domain2 = Product.builder().id(2L).name("Milky Way Cosmic Milk").price(99.99).description("Desc").build();
 
         when(productRepository.findAll()).thenReturn(entityList);
         when(productMapper.toDomain(entity1)).thenReturn(domain1);
@@ -64,28 +64,28 @@ class ProductServiceTest {
         entity.setId(1L);
         entity.setName("Anti Gravity Yarn Balls");
 
-        Product domain = new Product(1L, "Anti Gravity Yarn Balls", 150.50, "Desc", null);
+        Product domain = Product.builder().id(1L).name("Anti Gravity Yarn Balls").price(150.50).description("Desc").build();
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(entity));
         when(productMapper.toDomain(entity)).thenReturn(domain);
 
-        Optional<Product> productOptional = productService.getProductById(1L);
+        Product product = productService.getProductById(1L);
 
-        assertTrue(productOptional.isPresent());
-        assertEquals("Anti Gravity Yarn Balls", productOptional.get().getName());
+        assertNotNull(product);
+        assertEquals("Anti Gravity Yarn Balls", product.getName());
     }
 
     @Test
     @DisplayName("Should add a new product and assign an ID")
     void createProduct_ShouldAddNewProductAndAssignId() {
-        Product newProduct = new Product(null, "Laser Pointer", 45.0, "For cosmic cats", null);
+        Product newProduct = Product.builder().name("Laser Pointer").price(45.0).description("For cosmic cats").build();
 
         ProductEntity entityToSave = new ProductEntity();
         ProductEntity savedEntity = new ProductEntity();
         savedEntity.setId(3L);
         savedEntity.setName("Laser Pointer");
 
-        Product savedDomain = new Product(3L, "Laser Pointer", 45.0, "For cosmic cats", null);
+        Product savedDomain = Product.builder().id(3L).name("Laser Pointer").price(45.0).description("For cosmic cats").build();
 
         when(productMapper.toEntity(newProduct)).thenReturn(entityToSave);
         when(productRepository.save(entityToSave)).thenReturn(savedEntity);
@@ -108,8 +108,8 @@ class ProductServiceTest {
         updatedEntity.setId(1L);
         updatedEntity.setName("Super Yarn Balls");
 
-        Product updatedDetails = new Product(null, "Super Yarn Balls", 200.0, "Upgraded", null);
-        Product resultDomain = new Product(1L, "Super Yarn Balls", 200.0, "Upgraded", null);
+        Product updatedDetails = Product.builder().name("Super Yarn Balls").price(200.0).description("Upgraded").build();
+        Product resultDomain = Product.builder().id(1L).name("Super Yarn Balls").price(200.0).description("Upgraded").build();
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(existingEntity));
         when(productRepository.save(existingEntity)).thenReturn(updatedEntity);
@@ -124,7 +124,6 @@ class ProductServiceTest {
     @Test
     @DisplayName("Should remove a product by ID")
     void deleteProduct_ShouldRemoveProductFromMap() {
-        when(productRepository.existsById(2L)).thenReturn(true);
 
         productService.deleteProduct(2L);
 
@@ -136,7 +135,7 @@ class ProductServiceTest {
     void updateProduct_WhenProductDoesNotExist_ShouldThrowException() {
         when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Product someDetails = new Product(null, "Doesn't matter", 1.0, "This will fail", null);
+        Product someDetails = Product.builder().name("Doesn't matter").price(1.0).description("This will fail").build();
 
         assertThrows(ProductNotFoundException.class, () -> {
             productService.updateProduct(99L, someDetails);
@@ -145,10 +144,9 @@ class ProductServiceTest {
 
     @Test
     @DisplayName("Should return empty optional for non-existent product ID")
-    void getProductById_WhenProductDoesNotExist_ShouldReturnEmptyOptional() {
+    void getProductById_WhenProductDoesNotExist_ShouldThrowException() {
         when(productRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Optional<Product> productOptional = productService.getProductById(99L);
-        assertTrue(productOptional.isEmpty());
+        assertThrows(ProductNotFoundException.class, () -> productService.getProductById(99L));
     }
 }

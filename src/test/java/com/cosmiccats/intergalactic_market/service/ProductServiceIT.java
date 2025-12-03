@@ -36,8 +36,8 @@ class ProductServiceIT extends AbstractIT {
         categoryEntity.setName(CATEGORY_NAME);
         categoryEntity = categoryRepository.save(categoryEntity);
 
-        Category domainCategory = new Category(categoryEntity.getId(), CATEGORY_NAME, null);
-        Product newProduct = new Product(null, "Galaxy Chocolate Bar", 5.50, "Delicious", domainCategory);
+        Category domainCategory = Category.builder().id(categoryEntity.getId()).name(CATEGORY_NAME).build();
+        Product newProduct = Product.builder().name("Galaxy Chocolate Bar").price(5.50).description("Delicious").category(domainCategory).build();
 
         Product savedProduct = productService.createProduct(newProduct);
 
@@ -60,7 +60,7 @@ class ProductServiceIT extends AbstractIT {
         productEntity.setCategory(categoryEntity);
         productEntity = productRepository.save(productEntity);
 
-        Product updateDetails = new Product(null, "Fresh Comet Bread", 12.0, "Baked fresh", null);
+        Product updateDetails = Product.builder().name("Fresh Comet Bread").price(12.0).description("Baked fresh").build();
 
         productService.updateProduct(productEntity.getId(), updateDetails);
 

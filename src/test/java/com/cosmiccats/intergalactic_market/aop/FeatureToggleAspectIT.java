@@ -51,11 +51,11 @@ public class FeatureToggleAspectIT extends AbstractIT {
 
         ProductRequest request = new ProductRequest("Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies");
 
-        Product mockEntity = new Product(1L, "Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies", null);
-        Product mockCreatedProduct = new Product(1L, "Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies", null);
+        Product mockDomain = Product.builder().id(1L).name("Cosmic Star Dust").price(10.0).build();
+        Product mockCreatedProduct = Product.builder().id(1L).name("Cosmic Star Dust").price(10.0).build();
         ProductDTO mockDTO = new ProductDTO(1L, "Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies");
 
-        when(productMapper.toDomain(any(ProductRequest.class))).thenReturn(mockEntity);
+        when(productMapper.toDomain(any(ProductRequest.class))).thenReturn(mockDomain);
         when(productService.createProduct(any(Product.class))).thenReturn(mockCreatedProduct);
         when(productMapper.toDto(any(Product.class))).thenReturn(mockDTO);
 
@@ -73,11 +73,11 @@ public class FeatureToggleAspectIT extends AbstractIT {
         when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
         ProductRequest request = new ProductRequest("Galaxy Explorer", 20.0, "Navigate through distant galaxies");
 
-        Product mockEntity = new Product(1L, "Galaxy Explorer", 20.0, "Navigate through distant galaxies", null);
-        Product mockUpdatedProduct = new Product(1L, "Galaxy Explorer", 20.0, "Navigate through distant galaxies", null);
+        Product mockDomain = Product.builder().id(1L).name("Galaxy Explorer").price(20.0).build();
+        Product mockUpdatedProduct = Product.builder().id(1L).name("Galaxy Explorer").price(20.0).build();
         ProductDTO mockDTO = new ProductDTO(1L, "Galaxy Explorer", 20.0, "Navigate through distant galaxies");
 
-        when(productMapper.toDomain(any(ProductRequest.class))).thenReturn(mockEntity);
+        when(productMapper.toDomain(any(ProductRequest.class))).thenReturn(mockDomain);
         when(productService.updateProduct(eq(1L), any(Product.class))).thenReturn(mockUpdatedProduct);
         when(productMapper.toDto(any(Product.class))).thenReturn(mockDTO);
 
