@@ -1,10 +1,13 @@
 package com.cosmiccats.intergalactic_market.service;
 
 import com.cosmiccats.intergalactic_market.domain.Product;
+import com.cosmiccats.intergalactic_market.exceptions.CategoryNotFoundException;
 import com.cosmiccats.intergalactic_market.exceptions.PersistenceException;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
 import com.cosmiccats.intergalactic_market.mapper.ProductEntityMapper;
+import com.cosmiccats.intergalactic_market.repository.CategoryRepository;
 import com.cosmiccats.intergalactic_market.repository.ProductRepository;
+import com.cosmiccats.intergalactic_market.repository.entity.CategoryEntity;
 import com.cosmiccats.intergalactic_market.repository.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -20,9 +23,11 @@ import java.util.stream.Collectors;
 public class ProductServiceImplementation implements ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final ProductEntityMapper productMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(productMapper::toDomain)
@@ -30,6 +35,7 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Product getProductById(Long id) {
         return productRepository.findById(id)
                 .map(productMapper::toDomain)
@@ -40,34 +46,52 @@ public class ProductServiceImplementation implements ProductService {
     public Product createProduct(Product product) {
         try {
             ProductEntity entity = productMapper.toEntity(product);
+
+            if (product.getCategory() != null && product.getCategory().getId() != null) {
+                Long catId = product.getCategory().getId();
+                CategoryEntity categoryEntity = categoryRepository.findById(catId)
+                        .orElseThrow(() -> new CategoryNotFoundException(catId));
+                entity.setCategory(categoryEntity);
+            }
+
             entity = productRepository.save(entity);
             return productMapper.toDomain(entity);
-        }catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             throw new PersistenceException(e);
         }
     }
 
     @Override
     public Product updateProduct(Long id, Product productDetails) {
-        try{
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
-        entity.setName(productDetails.getName());
-        entity.setPrice(productDetails.getPrice());
-        entity.setDescription(productDetails.getDescription());
+        try {
+            entity.setName(productDetails.getName());
+            entity.setPrice(productDetails.getPrice());
+            entity.setDescription(productDetails.getDescription());
 
-        return productMapper.toDomain(productRepository.save(entity));
-        }catch (DataAccessException e) {
+            if (productDetails.getCategory() != null && productDetails.getCategory().getId() != null) {
+                Long catId = productDetails.getCategory().getId();
+                CategoryEntity categoryEntity = categoryRepository.findById(catId)
+                        .orElseThrow(() -> new CategoryNotFoundException(catId));
+                entity.setCategory(categoryEntity);
+            }
+
+            return productMapper.toDomain(productRepository.save(entity));
+        } catch (DataAccessException e) {
             throw new PersistenceException(e);
         }
     }
 
     @Override
     public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException(id);
+        }
         try {
             productRepository.deleteById(id);
-        }catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             throw new PersistenceException(e);
         }
     }

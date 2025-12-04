@@ -23,13 +23,10 @@ public class OrderServiceImplementation implements OrderService {
     public Order createOrder(Order order) {
         try {
             OrderEntity entity = orderMapper.toEntity(order);
-
             entity = orderRepository.save(entity);
             return orderMapper.toDomain(entity);
-
         } catch (DataAccessException e) {
             throw new PersistenceException(e);
         }
-
     }
 }

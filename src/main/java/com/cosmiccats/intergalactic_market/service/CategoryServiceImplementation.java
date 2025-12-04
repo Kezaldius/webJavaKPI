@@ -1,11 +1,11 @@
 package com.cosmiccats.intergalactic_market.service;
 
 import com.cosmiccats.intergalactic_market.domain.Category;
+import com.cosmiccats.intergalactic_market.exceptions.CategoryNotFoundException;
 import com.cosmiccats.intergalactic_market.exceptions.PersistenceException;
 import com.cosmiccats.intergalactic_market.mapper.CategoryEntityMapper;
 import com.cosmiccats.intergalactic_market.repository.CategoryRepository;
 import com.cosmiccats.intergalactic_market.repository.entity.CategoryEntity;
-import com.cosmiccats.intergalactic_market.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -47,12 +47,8 @@ public class CategoryServiceImplementation implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public Category getCategoryById(Long id) {
-        try {
-            return categoryRepository.findById(id)
-                    .map(categoryMapper::toDomain)
-                    .orElseThrow(() -> new RuntimeException("Category with id " + id + " not found"));
-        } catch (DataAccessException e) {
-            throw new PersistenceException(e);
-        }
+        return categoryRepository.findById(id)
+                .map(categoryMapper::toDomain)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 }
