@@ -3,6 +3,7 @@ package com.cosmiccats.intergalactic_market;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.springframework.context.annotation.DependsOn;
 import org.testcontainers.junit.jupiter.Container;
@@ -10,6 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
+@Transactional
 @DependsOn("liquibase")
 public abstract class AbstractIT {
 

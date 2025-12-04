@@ -86,9 +86,6 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
-        }
         try {
             productRepository.deleteById(id);
         } catch (DataAccessException e) {

@@ -28,6 +28,6 @@ class OrderTest {
         assertThat(updatedOrder.getItems().get(0).getProduct()).isEqualTo(product);
         assertThat(updatedOrder.getItems().get(0).getQuantity()).isEqualTo(5);
 
-        assertThat(order.getItems()).isEmpty();
+       assertThat(order.getItems()).isEmpty();
     }
 }
