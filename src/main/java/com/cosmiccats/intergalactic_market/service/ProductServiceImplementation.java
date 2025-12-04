@@ -1,56 +1,95 @@
 package com.cosmiccats.intergalactic_market.service;
 
 import com.cosmiccats.intergalactic_market.domain.Product;
-import org.springframework.stereotype.Service;
+import com.cosmiccats.intergalactic_market.exceptions.CategoryNotFoundException;
+import com.cosmiccats.intergalactic_market.exceptions.PersistenceException;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
+import com.cosmiccats.intergalactic_market.mapper.ProductEntityMapper;
+import com.cosmiccats.intergalactic_market.repository.CategoryRepository;
+import com.cosmiccats.intergalactic_market.repository.ProductRepository;
+import com.cosmiccats.intergalactic_market.repository.entity.CategoryEntity;
+import com.cosmiccats.intergalactic_market.repository.entity.ProductEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class ProductServiceImplementation implements ProductService {
-    private final ConcurrentHashMap<Long, Product> products = new ConcurrentHashMap<>();
-    private final AtomicLong idCounter = new AtomicLong();
 
-    public ProductServiceImplementation() {
-        createProduct(new Product(null, "Anti Gravity Yarn Balls", 150.50,
-                "Yarn balls that never fall."));
-        createProduct(new Product(null, "Milky Way Cosmic Milk'", 99.99, "Milk from cosmic cows."));
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductEntityMapper productMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> getAllProducts() {
+        return productRepository.findAll().stream()
+                .map(productMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .map(productMapper::toDomain)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Override
     public Product createProduct(Product product) {
-        long newId = idCounter.incrementAndGet();
-        product.setId(newId);
-        products.put(newId, product);
-        return product;
-    }
+        try {
+            ProductEntity entity = productMapper.toEntity(product);
 
-    @Override
-    public List<Product> getAllProducts() {
-        return new ArrayList<>(products.values());
-    }
+            if (product.getCategory() != null && product.getCategory().getId() != null) {
+                Long catId = product.getCategory().getId();
+                CategoryEntity categoryEntity = categoryRepository.findById(catId)
+                        .orElseThrow(() -> new CategoryNotFoundException(catId));
+                entity.setCategory(categoryEntity);
+            }
 
-    @Override
-    public Optional<Product> getProductById(Long id) {
-        return Optional.ofNullable(products.get(id));
+            entity = productRepository.save(entity);
+            return productMapper.toDomain(entity);
+        } catch (DataAccessException e) {
+            throw new PersistenceException(e);
+        }
     }
 
     @Override
     public Product updateProduct(Long id, Product productDetails) {
-        if (!products.containsKey(id)) {
-            throw new ProductNotFoundException(id);
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        try {
+            entity.setName(productDetails.getName());
+            entity.setPrice(productDetails.getPrice());
+            entity.setDescription(productDetails.getDescription());
+
+            if (productDetails.getCategory() != null && productDetails.getCategory().getId() != null) {
+                Long catId = productDetails.getCategory().getId();
+                CategoryEntity categoryEntity = categoryRepository.findById(catId)
+                        .orElseThrow(() -> new CategoryNotFoundException(catId));
+                entity.setCategory(categoryEntity);
+            }
+
+            return productMapper.toDomain(productRepository.save(entity));
+        } catch (DataAccessException e) {
+            throw new PersistenceException(e);
         }
-        productDetails.setId(id);
-        products.put(id, productDetails);
-        return productDetails;
     }
 
     @Override
     public void deleteProduct(Long id) {
-        products.remove(id);
+        try {
+            productRepository.deleteById(id);
+        } catch (DataAccessException e) {
+            throw new PersistenceException(e);
+        }
     }
 }

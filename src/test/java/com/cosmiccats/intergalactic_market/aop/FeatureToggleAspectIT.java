@@ -1,5 +1,6 @@
 package com.cosmiccats.intergalactic_market.aop;
 
+import com.cosmiccats.intergalactic_market.AbstractIT;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
 import com.cosmiccats.intergalactic_market.dto.ProductDTO;
 import com.cosmiccats.intergalactic_market.domain.Product;
@@ -11,26 +12,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-// Сподіваюсь правильно зрозумів що потрібен саме інтеграційний тест для рівня контролеру, а не сервісу
-@SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Feature Toggle Aspect Integration Tests")
-public class FeatureToggleAspectIT {
+public class FeatureToggleAspectIT extends AbstractIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,17 +51,11 @@ public class FeatureToggleAspectIT {
 
         ProductRequest request = new ProductRequest("Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies");
 
-        Product mockEntity = new Product();
-        mockEntity.setId(1L);
-        mockEntity.setName("Cosmic Star Dust");
-
-        Product mockCreatedProduct = new Product();
-        mockCreatedProduct.setId(1L);
-        mockCreatedProduct.setName("Cosmic Star Dust");
-
+        Product mockDomain = Product.builder().id(1L).name("Cosmic Star Dust").price(10.0).build();
+        Product mockCreatedProduct = Product.builder().id(1L).name("Cosmic Star Dust").price(10.0).build();
         ProductDTO mockDTO = new ProductDTO(1L, "Cosmic Star Dust", 10.0, "Shiny dust from distant galaxies");
 
-        when(productMapper.toEntity(any(ProductRequest.class))).thenReturn(mockEntity);
+        when(productMapper.toDomain(any(ProductRequest.class))).thenReturn(mockDomain);
         when(productService.createProduct(any(Product.class))).thenReturn(mockCreatedProduct);
         when(productMapper.toDto(any(Product.class))).thenReturn(mockDTO);
 
@@ -82,17 +73,11 @@ public class FeatureToggleAspectIT {
         when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
         ProductRequest request = new ProductRequest("Galaxy Explorer", 20.0, "Navigate through distant galaxies");
 
-        Product mockEntity = new Product();
-        mockEntity.setId(1L);
-        mockEntity.setName("Galaxy Explorer");
-
-        Product mockUpdatedProduct = new Product();
-        mockUpdatedProduct.setId(1L);
-        mockUpdatedProduct.setName("Galaxy Explorer");
-
+        Product mockDomain = Product.builder().id(1L).name("Galaxy Explorer").price(20.0).build();
+        Product mockUpdatedProduct = Product.builder().id(1L).name("Galaxy Explorer").price(20.0).build();
         ProductDTO mockDTO = new ProductDTO(1L, "Galaxy Explorer", 20.0, "Navigate through distant galaxies");
 
-        when(productMapper.toEntity(any(ProductRequest.class))).thenReturn(mockEntity);
+        when(productMapper.toDomain(any(ProductRequest.class))).thenReturn(mockDomain);
         when(productService.updateProduct(eq(1L), any(Product.class))).thenReturn(mockUpdatedProduct);
         when(productMapper.toDto(any(Product.class))).thenReturn(mockDTO);
 

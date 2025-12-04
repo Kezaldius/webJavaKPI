@@ -5,10 +5,8 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-public class Product {
+public class OrderItem {
     Long id;
-    String name;
-    Double price;
-    String description;
-    Category category;
+    Product product;
+    int quantity;
 }

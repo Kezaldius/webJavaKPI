@@ -28,24 +28,22 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDTO> getAllProducts() {
-        return productService.getAllProducts().stream().map(productMapper::toDto)
+        return productService.getAllProducts().stream()
+                .map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(product -> ResponseEntity.ok(productMapper.toDto(product)))
-                .orElse(ResponseEntity.notFound().build());
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(productMapper.toDto(product));
     }
-
 
     @PostMapping
     @ApiResponse(responseCode = "201", description = "Product created successfully")
     @RequiresFeatureToggle("cosmoCats")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest requestDTO) {
-        Product productToCreate = productMapper.toEntity(requestDTO);
+        Product productToCreate = productMapper.toDomain(requestDTO);
         Product createdProduct = productService.createProduct(productToCreate);
         ProductDTO responseDto = productMapper.toDto(createdProduct);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -54,8 +52,8 @@ public class ProductController {
     @PutMapping("/{id}")
     @RequiresFeatureToggle("cosmoCats")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
-            @Valid @RequestBody ProductRequest requestDTO) {
-        Product productDetails = productMapper.toEntity(requestDTO);
+                                                    @Valid @RequestBody ProductRequest requestDTO) {
+        Product productDetails = productMapper.toDomain(requestDTO);
         Product updatedProduct = productService.updateProduct(id, productDetails);
         return ResponseEntity.ok(productMapper.toDto(updatedProduct));
     }

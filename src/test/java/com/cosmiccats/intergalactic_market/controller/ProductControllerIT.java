@@ -1,9 +1,9 @@
 package com.cosmiccats.intergalactic_market.controller;
 
+import com.cosmiccats.intergalactic_market.AbstractIT;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.dto.ProductRequest;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
-import com.cosmiccats.intergalactic_market.mapper.ProductMapper;
 import com.cosmiccats.intergalactic_market.service.FeatureToggleService;
 import com.cosmiccats.intergalactic_market.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,14 +11,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,9 +25,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+
 @AutoConfigureMockMvc
-class ProductControllerIT {
+class ProductControllerIT extends AbstractIT {
 
     private static final Long PRODUCT_ID = 1L;
     private static final Long NON_EXISTENT_ID = 99L;
@@ -43,9 +41,6 @@ class ProductControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private ProductMapper productMapper;
-
     @MockitoBean
     private ProductService productService;
 
@@ -55,7 +50,7 @@ class ProductControllerIT {
     @Test
     @DisplayName("GET /products - Should return list of products")
     void getAllProducts_ShouldReturnProducts() throws Exception {
-        Product product = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product product = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
         when(productService.getAllProducts()).thenReturn(Collections.singletonList(product));
 
         mockMvc.perform(get("/api/v1/products"))
@@ -72,7 +67,7 @@ class ProductControllerIT {
         when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
 
         ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
-        Product createdProduct = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product createdProduct = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
 
         when(productService.createProduct(any(Product.class))).thenReturn(createdProduct);
 
@@ -89,8 +84,8 @@ class ProductControllerIT {
     @Test
     @DisplayName("GET /products/{id} - Should return existing product")
     void getProductById_ShouldReturnExistingProduct() throws Exception {
-        Product product = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
-        when(productService.getProductById(PRODUCT_ID)).thenReturn(Optional.of(product));
+        Product product = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
+        when(productService.getProductById(PRODUCT_ID)).thenReturn(product);
 
         mockMvc.perform(get("/api/v1/products/" + PRODUCT_ID))
                 .andExpect(status().isOk())
@@ -103,7 +98,7 @@ class ProductControllerIT {
     @Test
     @DisplayName("GET /products/{id} - Should return 404 Not Found")
     void getProductById_WhenNotFound_ShouldReturn404() throws Exception {
-        when(productService.getProductById(NON_EXISTENT_ID)).thenReturn(Optional.empty());
+        when(productService.getProductById(NON_EXISTENT_ID)).thenThrow(new ProductNotFoundException(NON_EXISTENT_ID));
 
         mockMvc.perform(get("/api/v1/products/" + NON_EXISTENT_ID))
                 .andExpect(status().isNotFound());
@@ -117,7 +112,7 @@ class ProductControllerIT {
         when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
 
         ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
-        Product updatedProduct = new Product(PRODUCT_ID, PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product updatedProduct = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
 
         when(productService.updateProduct(eq(PRODUCT_ID), any(Product.class))).thenReturn(updatedProduct);
 
