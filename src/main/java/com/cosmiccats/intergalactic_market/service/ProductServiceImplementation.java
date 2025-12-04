@@ -1,11 +1,13 @@
 package com.cosmiccats.intergalactic_market.service;
 
 import com.cosmiccats.intergalactic_market.domain.Product;
+import com.cosmiccats.intergalactic_market.exceptions.PersistenceException;
 import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
 import com.cosmiccats.intergalactic_market.mapper.ProductEntityMapper;
 import com.cosmiccats.intergalactic_market.repository.ProductRepository;
 import com.cosmiccats.intergalactic_market.repository.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,13 +38,18 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     public Product createProduct(Product product) {
-        ProductEntity entity = productMapper.toEntity(product);
-        entity = productRepository.save(entity);
-        return productMapper.toDomain(entity);
+        try {
+            ProductEntity entity = productMapper.toEntity(product);
+            entity = productRepository.save(entity);
+            return productMapper.toDomain(entity);
+        }catch (DataAccessException e) {
+            throw new PersistenceException(e);
+        }
     }
 
     @Override
     public Product updateProduct(Long id, Product productDetails) {
+        try{
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
@@ -51,10 +58,17 @@ public class ProductServiceImplementation implements ProductService {
         entity.setDescription(productDetails.getDescription());
 
         return productMapper.toDomain(productRepository.save(entity));
+        }catch (DataAccessException e) {
+            throw new PersistenceException(e);
+        }
     }
 
     @Override
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        try {
+            productRepository.deleteById(id);
+        }catch (DataAccessException e) {
+            throw new PersistenceException(e);
+        }
     }
 }
