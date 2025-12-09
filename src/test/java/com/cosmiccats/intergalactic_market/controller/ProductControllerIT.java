@@ -22,9 +22,9 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 @AutoConfigureMockMvc
 class ProductControllerIT extends AbstractIT {
@@ -53,7 +53,8 @@ class ProductControllerIT extends AbstractIT {
         Product product = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
         when(productService.getAllProducts()).thenReturn(Collections.singletonList(product));
 
-        mockMvc.perform(get("/api/v1/products"))
+        mockMvc.perform(get("/api/v1/products")
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].name", is(PRODUCT_NAME)));
@@ -72,6 +73,7 @@ class ProductControllerIT extends AbstractIT {
         when(productService.createProduct(any(Product.class))).thenReturn(createdProduct);
 
         mockMvc.perform(post("/api/v1/products")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productRequest)))
                 .andExpect(status().isCreated())
@@ -87,7 +89,8 @@ class ProductControllerIT extends AbstractIT {
         Product product = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
         when(productService.getProductById(PRODUCT_ID)).thenReturn(product);
 
-        mockMvc.perform(get("/api/v1/products/" + PRODUCT_ID))
+        mockMvc.perform(get("/api/v1/products/" + PRODUCT_ID)
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(PRODUCT_ID.intValue())))
                 .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
@@ -100,7 +103,8 @@ class ProductControllerIT extends AbstractIT {
     void getProductById_WhenNotFound_ShouldReturn404() throws Exception {
         when(productService.getProductById(NON_EXISTENT_ID)).thenThrow(new ProductNotFoundException(NON_EXISTENT_ID));
 
-        mockMvc.perform(get("/api/v1/products/" + NON_EXISTENT_ID))
+        mockMvc.perform(get("/api/v1/products/" + NON_EXISTENT_ID)
+                        .with(jwt()))
                 .andExpect(status().isNotFound());
 
         verify(productService, times(1)).getProductById(NON_EXISTENT_ID);
@@ -117,6 +121,7 @@ class ProductControllerIT extends AbstractIT {
         when(productService.updateProduct(eq(PRODUCT_ID), any(Product.class))).thenReturn(updatedProduct);
 
         mockMvc.perform(put("/api/v1/products/" + PRODUCT_ID)
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productRequest)))
                 .andExpect(status().isOk())
@@ -136,6 +141,7 @@ class ProductControllerIT extends AbstractIT {
                 .thenThrow(new ProductNotFoundException(NON_EXISTENT_ID));
 
         mockMvc.perform(put("/api/v1/products/" + NON_EXISTENT_ID)
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productRequest)))
                 .andExpect(status().isNotFound());
@@ -150,7 +156,8 @@ class ProductControllerIT extends AbstractIT {
 
         doNothing().when(productService).deleteProduct(2L);
 
-        mockMvc.perform(delete("/api/v1/products/2"))
+        mockMvc.perform(delete("/api/v1/products/2")
+                        .with(jwt()))
                 .andExpect(status().isNoContent());
 
         verify(productService, times(1)).deleteProduct(2L);
@@ -164,6 +171,7 @@ class ProductControllerIT extends AbstractIT {
         ProductRequest invalidRequest = new ProductRequest("", -10.0, "Invalid");
 
         mockMvc.perform(post("/api/v1/products")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());

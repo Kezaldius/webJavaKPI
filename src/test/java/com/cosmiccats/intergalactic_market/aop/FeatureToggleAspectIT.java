@@ -22,6 +22,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,6 +61,7 @@ public class FeatureToggleAspectIT extends AbstractIT {
         when(productMapper.toDto(any(Product.class))).thenReturn(mockDTO);
 
         mockMvc.perform(post("/api/v1/products")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -82,6 +84,7 @@ public class FeatureToggleAspectIT extends AbstractIT {
         when(productMapper.toDto(any(Product.class))).thenReturn(mockDTO);
 
         mockMvc.perform(put("/api/v1/products/1")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -94,7 +97,8 @@ public class FeatureToggleAspectIT extends AbstractIT {
     void whenKittyProductsFeatureIsDisabled_shouldBlockDeleteProduct() throws Exception {
         when(featureToggleService.isEnabled("kittyProducts")).thenReturn(false);
 
-        mockMvc.perform(delete("/api/v1/products/1"))
+        mockMvc.perform(delete("/api/v1/products/1")
+                        .with(jwt()))
                 .andExpect(status().isForbidden());
 
         verify(productService, never()).deleteProduct(any());
@@ -105,7 +109,8 @@ public class FeatureToggleAspectIT extends AbstractIT {
     void whenEndpointIsNotProtected_shouldAlwaysAllowAccess() throws Exception {
         when(productService.getAllProducts()).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/v1/products"))
+        mockMvc.perform(get("/api/v1/products")
+                        .with(jwt()))
                 .andExpect(status().isOk());
 
         verify(productService).getAllProducts();
