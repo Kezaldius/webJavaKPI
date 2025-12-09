@@ -9,6 +9,7 @@ import com.cosmiccats.intergalactic_market.repository.entity.CategoryEntity;
 import com.cosmiccats.intergalactic_market.repository.entity.ProductEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
+@WithMockUser(username = "test-cosmo-cat")
 class ProductServiceIT extends AbstractIT {
 
     private static final String CATEGORY_NAME = "Cosmic Food";
