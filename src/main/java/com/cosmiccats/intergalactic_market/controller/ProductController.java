@@ -10,6 +10,7 @@ import com.cosmiccats.intergalactic_market.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public List<ProductDTO> getAllProducts() {
         return productService.getAllProducts().stream()
                 .map(productMapper::toDto)
@@ -34,6 +36,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(productMapper.toDto(product));
@@ -42,6 +45,7 @@ public class ProductController {
     @PostMapping
     @ApiResponse(responseCode = "201", description = "Product created successfully")
     @RequiresFeatureToggle("cosmoCats")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest requestDTO) {
         Product productToCreate = productMapper.toDomain(requestDTO);
         Product createdProduct = productService.createProduct(productToCreate);
@@ -51,6 +55,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @RequiresFeatureToggle("cosmoCats")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
                                                     @Valid @RequestBody ProductRequest requestDTO) {
         Product productDetails = productMapper.toDomain(requestDTO);
@@ -62,6 +67,7 @@ public class ProductController {
     @ApiResponse(responseCode = "204", description = "Product successfully deleted")
     @DeleteMapping("/{id}")
     @RequiresFeatureToggle("kittyProducts")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
