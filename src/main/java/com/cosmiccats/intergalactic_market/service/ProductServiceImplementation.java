@@ -11,6 +11,7 @@ import com.cosmiccats.intergalactic_market.repository.entity.CategoryEntity;
 import com.cosmiccats.intergalactic_market.repository.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public List<Product> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(productMapper::toDomain)
@@ -36,6 +38,7 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public Product getProductById(Long id) {
         return productRepository.findById(id)
                 .map(productMapper::toDomain)
@@ -43,6 +46,7 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public Product createProduct(Product product) {
         try {
             ProductEntity entity = productMapper.toEntity(product);
@@ -62,6 +66,7 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public Product updateProduct(Long id, Product productDetails) {
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
@@ -85,6 +90,7 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public void deleteProduct(Long id) {
         try {
             productRepository.deleteById(id);
