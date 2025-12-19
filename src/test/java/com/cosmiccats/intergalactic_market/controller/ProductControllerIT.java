@@ -1,0 +1,181 @@
+package com.cosmiccats.intergalactic_market.controller;
+
+import com.cosmiccats.intergalactic_market.AbstractIT;
+import com.cosmiccats.intergalactic_market.domain.Product;
+import com.cosmiccats.intergalactic_market.dto.ProductRequest;
+import com.cosmiccats.intergalactic_market.exceptions.ProductNotFoundException;
+import com.cosmiccats.intergalactic_market.service.FeatureToggleService;
+import com.cosmiccats.intergalactic_market.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@AutoConfigureMockMvc
+class ProductControllerIT extends AbstractIT {
+
+    private static final Long PRODUCT_ID = 1L;
+    private static final Long NON_EXISTENT_ID = 99L;
+    private static final String PRODUCT_NAME = "Galaxy Yarn";
+    private static final double PRODUCT_PRICE = 199.99;
+    private static final String PRODUCT_DESCRIPTION = "Improved cosmic yarn";
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private ProductService productService;
+
+    @MockitoSpyBean
+    private FeatureToggleService featureToggleService;
+
+    @Test
+    @DisplayName("GET /products - Should return list of products")
+    void getAllProducts_ShouldReturnProducts() throws Exception {
+        Product product = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
+        when(productService.getAllProducts()).thenReturn(Collections.singletonList(product));
+
+        mockMvc.perform(get("/api/v1/products")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is(PRODUCT_NAME)));
+
+        verify(productService, times(1)).getAllProducts();
+    }
+
+    @Test
+    @DisplayName("POST /products - Should create a new product")
+    void createProduct_ShouldAddNewProduct() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
+        ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product createdProduct = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
+
+        when(productService.createProduct(any(Product.class))).thenReturn(createdProduct);
+
+        mockMvc.perform(post("/api/v1/products")
+                        .with(jwt())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(PRODUCT_ID.intValue())))
+                .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
+
+        verify(productService, times(1)).createProduct(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("GET /products/{id} - Should return existing product")
+    void getProductById_ShouldReturnExistingProduct() throws Exception {
+        Product product = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
+        when(productService.getProductById(PRODUCT_ID)).thenReturn(product);
+
+        mockMvc.perform(get("/api/v1/products/" + PRODUCT_ID)
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(PRODUCT_ID.intValue())))
+                .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
+
+        verify(productService, times(1)).getProductById(PRODUCT_ID);
+    }
+
+    @Test
+    @DisplayName("GET /products/{id} - Should return 404 Not Found")
+    void getProductById_WhenNotFound_ShouldReturn404() throws Exception {
+        when(productService.getProductById(NON_EXISTENT_ID)).thenThrow(new ProductNotFoundException(NON_EXISTENT_ID));
+
+        mockMvc.perform(get("/api/v1/products/" + NON_EXISTENT_ID)
+                        .with(jwt()))
+                .andExpect(status().isNotFound());
+
+        verify(productService, times(1)).getProductById(NON_EXISTENT_ID);
+    }
+
+    @Test
+    @DisplayName("PUT /products/{id} - Should modify existing product")
+    void updateProduct_ShouldModifyExistingProduct() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
+        ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+        Product updatedProduct = Product.builder().id(PRODUCT_ID).name(PRODUCT_NAME).price(PRODUCT_PRICE).description(PRODUCT_DESCRIPTION).build();
+
+        when(productService.updateProduct(eq(PRODUCT_ID), any(Product.class))).thenReturn(updatedProduct);
+
+        mockMvc.perform(put("/api/v1/products/" + PRODUCT_ID)
+                        .with(jwt())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(PRODUCT_NAME)));
+
+        verify(productService, times(1)).updateProduct(eq(PRODUCT_ID), any(Product.class));
+    }
+
+    @Test
+    @DisplayName("PUT /products/{id} - Should return 404 Not Found")
+    void updateProduct_WhenNotFound_ShouldReturn404() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
+        ProductRequest productRequest = new ProductRequest(PRODUCT_NAME, PRODUCT_PRICE, PRODUCT_DESCRIPTION);
+
+        when(productService.updateProduct(eq(NON_EXISTENT_ID), any(Product.class)))
+                .thenThrow(new ProductNotFoundException(NON_EXISTENT_ID));
+
+        mockMvc.perform(put("/api/v1/products/" + NON_EXISTENT_ID)
+                        .with(jwt())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productRequest)))
+                .andExpect(status().isNotFound());
+
+        verify(productService, times(1)).updateProduct(eq(NON_EXISTENT_ID), any(Product.class));
+    }
+
+    @Test
+    @DisplayName("DELETE /products/{id} - Should return No Content")
+    void deleteProduct_ShouldReturnNoContent() throws Exception {
+        when(featureToggleService.isEnabled("kittyProducts")).thenReturn(true);
+
+        doNothing().when(productService).deleteProduct(2L);
+
+        mockMvc.perform(delete("/api/v1/products/2")
+                        .with(jwt()))
+                .andExpect(status().isNoContent());
+
+        verify(productService, times(1)).deleteProduct(2L);
+    }
+
+    @Test
+    @DisplayName("POST /products - With invalid data should return Bad Request")
+    void createProduct_WithInvalidData_ShouldReturnBadRequest() throws Exception {
+        when(featureToggleService.isEnabled("cosmoCats")).thenReturn(true);
+
+        ProductRequest invalidRequest = new ProductRequest("", -10.0, "Invalid");
+
+        mockMvc.perform(post("/api/v1/products")
+                        .with(jwt())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(productService, never()).createProduct(any(Product.class));
+    }
+}

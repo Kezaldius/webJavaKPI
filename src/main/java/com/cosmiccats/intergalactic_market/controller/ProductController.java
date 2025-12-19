@@ -1,6 +1,7 @@
 package com.cosmiccats.intergalactic_market.controller;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import com.cosmiccats.intergalactic_market.aop.RequiresFeatureToggle;
 import com.cosmiccats.intergalactic_market.domain.Product;
 import com.cosmiccats.intergalactic_market.dto.*;
 import com.cosmiccats.intergalactic_market.mapper.ProductMapper;
@@ -9,6 +10,7 @@ import com.cosmiccats.intergalactic_market.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,33 +28,37 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public List<ProductDTO> getAllProducts() {
-        return productService.getAllProducts().stream().map(productMapper::toDto)
+        return productService.getAllProducts().stream()
+                .map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(product -> ResponseEntity.ok(productMapper.toDto(product)))
-                .orElse(ResponseEntity.notFound().build());
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(productMapper.toDto(product));
     }
-
 
     @PostMapping
     @ApiResponse(responseCode = "201", description = "Product created successfully")
+    @RequiresFeatureToggle("cosmoCats")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest requestDTO) {
-        Product productToCreate = productMapper.toEntity(requestDTO);
+        Product productToCreate = productMapper.toDomain(requestDTO);
         Product createdProduct = productService.createProduct(productToCreate);
         ProductDTO responseDto = productMapper.toDto(createdProduct);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
+    @RequiresFeatureToggle("cosmoCats")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id,
-            @Valid @RequestBody ProductRequest requestDTO) {
-        Product productDetails = productMapper.toEntity(requestDTO);
+                                                    @Valid @RequestBody ProductRequest requestDTO) {
+        Product productDetails = productMapper.toDomain(requestDTO);
         Product updatedProduct = productService.updateProduct(id, productDetails);
         return ResponseEntity.ok(productMapper.toDto(updatedProduct));
     }
@@ -60,6 +66,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiResponse(responseCode = "204", description = "Product successfully deleted")
     @DeleteMapping("/{id}")
+    @RequiresFeatureToggle("kittyProducts")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

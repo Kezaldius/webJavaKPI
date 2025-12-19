@@ -1,0 +1,47 @@
+name: Build and Test Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+      - '**'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up JDK 17 (you can change to another version if needed)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Cache Mavem dependencies
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Grant execute permission for Maven Wrapper
+        run: chmod +x ./mvnw
+
+      # Run maven build and tests with coverage
+      - name: Build with Maven
+        run: ./mvnw -B verify 
+
+      # Upload the JaCoCo test coverage report
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-report
+          path: target/site/jacoco/

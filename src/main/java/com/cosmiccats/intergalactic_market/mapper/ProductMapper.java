@@ -10,5 +10,5 @@ import org.mapstruct.Mapper;
 public interface ProductMapper {
     ProductDTO toDto(Product product);
 
-    Product toEntity(ProductRequest requestDTO);
+    Product toDomain(ProductRequest requestDTO);
 }
